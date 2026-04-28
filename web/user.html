@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>بوابة المستخدم - نظام المواقف الذكية</title>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { font-family: 'Tahoma', sans-serif; background-color: #eef2f7; padding: 20px; direction: rtl; }
+        .container { max-width: 800px; margin: 30px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.1); text-align: center; }
+        .info-card { background: #f8f9fa; border-right: 5px solid #3498db; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: right; }
+        .status-badge { display: inline-block; padding: 15px 30px; border-radius: 50px; font-size: 1.5em; font-weight: bold; margin-bottom: 20px; }
+        .found { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
+        .not-found { background: #e2e3e5; color: #383d41; }
+        .logout-btn { background: #95a5a6; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="text-align: left;"><button class="logout-btn" onclick="logout()">خروج <i class="fas fa-sign-out-alt"></i></button></div>
+        <h1>مرحباً بك في نظام المواقف الذكي 🅿️</h1>
+        <p id="userEmail" style="color: #7f8c8d; font-weight: bold;"></p>
+
+        <div class="info-card">
+            <h3><i class="fas fa-info-circle"></i> حالة الجراج الآن:</h3>
+            <p id="garageStatus" style="font-size: 1.3em; color: #2980b9; font-weight: bold;">جارٍ التحقق...</p>
+        </div>
+
+        <h2><i class="fas fa-car"></i> موقع سيارتك:</h2>
+        <div id="carLocation" class="status-badge not-found">جارٍ البحث عن سيارتك...</div>
+    </div>
+
+    <script>
+        const firebaseConfig = { /* نفس الإعدادات */
+            apiKey: "AIzaSyCn0n6_0A3ev1bsULB75dqwPzBYhVu0RHI",
+            authDomain: "smart-parking-95fac.firebaseapp.com",
+            databaseURL: "https://smart-parking-95fac-default-rtdb.firebaseio.com",
+            projectId: "smart-parking-95fac",
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user) window.location.href = "index.html";
+            else {
+                document.getElementById('userEmail').innerText = user.email;
+                // استخراج الـ UID من الإيميل (مثل: user1@1a2b3c4d.com -> 1A2B3C4D)
+                const userUID = user.email.split('@')[1].split('.')[0].toUpperCase();
+                monitorCar(userUID);
+            }
+        });
+
+        function logout() { firebase.auth().signOut().then(() => window.location.href = "index.html"); }
+
+        // مراقبة السيارة وعدد الأماكن
+        function monitorCar(uid) {
+            db.ref('Parking_Slots').on('value', snapshot => {
+                const slots = snapshot.val();
+                let found = false;
+                for (let key in slots) {
+                    if (slots[key].UID === uid) {
+                        const box = document.getElementById('carLocation');
+                        box.innerHTML = `<i class="fas fa-map-marker-alt"></i> سيارتك في: ${key.replace('_', ' ')}`;
+                        box.className = "status-badge found";
+                        found = true; break;
+                    }
+                }
+                if (!found) {
+                    const box = document.getElementById('carLocation');
+                    box.innerHTML = `<i class="fas fa-search"></i> لم يتم العثور على سيارتك في الموقف`;
+                    box.className = "status-badge not-found";
+                }
+            });
+
+            db.ref('Parking_Info/Available_Slots').on('value', s => {
+                const count = s.val();
+                document.getElementById('garageStatus').innerText = count > 0 ? 
+                    `يوجد ${count} أماكن متاحة.. يمكنك القدوم!` : "عذراً، الموقف ممتلئ تماماً";
+            });
+        }
+    </script>
+</body>
+</html>
