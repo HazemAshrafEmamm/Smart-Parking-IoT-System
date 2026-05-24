@@ -8,38 +8,32 @@
 #include <LiquidCrystal_I2C.h> 
 
 //==============================================
-// 1. تعريفات الثوابت وبيانات الاعتماد
 //==============================================
-#define WIFI_SSID       "khaled"  
-#define WIFI_PASSWORD   "k1234567" 
+#define WIFI_SSID       "*****"  
+#define WIFI_PASSWORD   "**********" 
 
-const char* FIREBASE_HOST_URL = "smart-parking-95fac-default-rtdb.firebaseio.com"; 
-const char* FIREBASE_SECRET = "GITUlLBv4BQILB0vUb1igJGEgT4plCumA8XBme0D"; 
+const char* FIREBASE_HOST_URL = "smart-parking-****-default-rtdb.firebaseio.com"; 
+const char* FIREBASE_SECRET = "**************************************************"; 
 
-// تعريف أطراف RFID 
 #define RST_PIN   5  
 #define SS_PIN    15 
 #define MOSI_PIN  23 
 #define MISO_PIN  19 
 #define SCK_PIN   18 
 
-// تعريف طرف السيرفو وزوايا البوابة
 #define SERVO_PIN 25  
 #define CLOSE_POS 90   
 #define OPEN_POS  0  
 
-// تعريف أطراف مستشعرات الأماكن (5 أماكن)
 #define IR_SLOT_1     32  
 #define IR_SLOT_2     33  
 #define IR_SLOT_3     26  
 #define IR_SLOT_4     14  
-#define IR_SLOT_5     34  // آمن للدخول فقط (Input Only)
+#define IR_SLOT_5     34 
 
-// تعريف أطراف مصابيح LED (تجنبنا 21 و 22 نهائياً)
 int ledGreenPins[] = {17, 2, 13, 4, 3}; // Slot 1, 2, 3, 4, 5
 int ledRedPins[]   = {16, 27,  12, 0, 1}; // Slot 1, 2, 3, 4, 5
 
-// تعريف المفتاح الرئيسي وبطاقات الاشتراك
 const String MASTER_KEY = "1DC81C2F"; 
 const String SUBSCRIBERS[] = { 
   "22491103", "2EAD0B03", "84861B03", "F32CB8D9" 
@@ -50,7 +44,6 @@ int availableSlots = TOTAL_SLOTS;
 const long OCCUPANCY_CONFIRMATION_TIME_MS = 3000; 
 
 //==============================================
-// 2. تعريف الكائنات والمتغيرات
 //==============================================
 FirebaseConfig firebaseConfig;
 FirebaseAuth firebaseAuth;
@@ -69,7 +62,7 @@ bool lastKnownState[TOTAL_SLOTS] = {false, false, false, false, false};
 String lastRegisteredUID = "";
 
 //==============================================
-// 3. الدوال المساعدة (Helper Functions)
+//          (Helper Functions)
 //==============================================
 void openGate() {
   gateServo.write(OPEN_POS);
@@ -177,7 +170,7 @@ void updateSlotsStatus() {
   lcd.setCursor(0, 1);
   lcd.print("Available: ");
   lcd.print(availableSlots);
-  lcd.print("   "); // هذه المسافات مهمة جداً لمسح الأرقام الزائدة
+  lcd.print("   ");
 }
 
 void handleSubscriber(String uid, bool isMasterKey = false) {
@@ -237,7 +230,7 @@ void handleSubscriber(String uid, bool isMasterKey = false) {
 }
 
 //==============================================
-// 4. وظيفة الإعداد (setup) 
+//             (setup) 
 //==============================================
 void setup() {
   Serial.begin(115200);
@@ -285,7 +278,7 @@ void setup() {
 }
 
 //==============================================
-// 5. حلقة العمل الرئيسية (loop) 
+//                     (loop) 
 //==============================================
 void loop() {
   if (WiFi.status() == WL_CONNECTED) {
